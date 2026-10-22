@@ -213,6 +213,33 @@ namespace Proyecto_Restaurante.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Proyecto_Restaurante.Models.DetallePedido", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PedidoId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PedidoId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("DetallesPedidos");
+                });
+
             modelBuilder.Entity("Proyecto_Restaurante.Models.Mesa", b =>
                 {
                     b.Property<int>("Id")
@@ -232,6 +259,32 @@ namespace Proyecto_Restaurante.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Mesas");
+                });
+
+            modelBuilder.Entity("Proyecto_Restaurante.Models.Pedido", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MesaId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MesaId");
+
+                    b.ToTable("Pedidos");
                 });
 
             modelBuilder.Entity("Proyecto_Restaurante.Models.Producto", b =>
@@ -309,6 +362,41 @@ namespace Proyecto_Restaurante.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Proyecto_Restaurante.Models.DetallePedido", b =>
+                {
+                    b.HasOne("Proyecto_Restaurante.Models.Pedido", "Pedido")
+                        .WithMany("Detalles")
+                        .HasForeignKey("PedidoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proyecto_Restaurante.Models.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pedido");
+
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("Proyecto_Restaurante.Models.Pedido", b =>
+                {
+                    b.HasOne("Proyecto_Restaurante.Models.Mesa", "Mesa")
+                        .WithMany()
+                        .HasForeignKey("MesaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mesa");
+                });
+
+            modelBuilder.Entity("Proyecto_Restaurante.Models.Pedido", b =>
+                {
+                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }
