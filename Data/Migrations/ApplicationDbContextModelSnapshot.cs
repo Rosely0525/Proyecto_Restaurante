@@ -213,6 +213,27 @@ namespace Proyecto_Restaurante.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Proyecto_Restaurante.Models.Mesa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Capacidad")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Numero")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Mesas");
+                });
+
             modelBuilder.Entity("Proyecto_Restaurante.Models.Producto", b =>
                 {
                     b.Property<int>("Id")
