@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Chicken's Joel</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+            :root {
+                --joel-red: #b83227;
+                --joel-yellow: #f4c430;
+                --joel-dark: #2c1e1a;
+            }
+
+            body {
+                min-height: 100vh;
+                background-color: #fbf6ef; /* Fondo crema suave institucional */
+                color: #2c1e1a;
+            }
+
+            .sidebar {
+                width: 260px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                background: var(--joel-dark);
+                color: #fff;
+                transition: all 0.3s;
+                z-index: 100;
+                border-right: 4px solid var(--joel-red);
+            }
+
+                .sidebar .brand-title {
+                    color: var(--joel-yellow) !important;
+                }
+
+                .sidebar .nav-link {
+                    color: rgba(255,255,255,.8);
+                    padding: 12px 20px;
+                    margin: 6px 10px;
+                    border-radius: 6px;
+                    transition: background 0.2s;
+                }
+
+                    .sidebar .nav-link:hover {
+                        color: #fff;
+                        background-color: rgba(184, 50, 39, 0.4);
+                    }
+
+                    .sidebar .nav-link.active {
+                        color: #fff;
+                        background-color: var(--joel-red);
+                        font-weight: bold;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                    }
+
+            .main-content {
+                margin-left: 260px;
+                padding: 30px;
+                background-color: #fbf6ef;
+                min-height: 100vh;
+            }
+
+            .btn-primary {
+                background-color: var(--joel-red);
+                border-color: var(--joel-red);
+            }
+
+                .btn-primary:hover {
+                    background-color: #96251c;
+                    border-color: #96251c;
+                }
+
+            @@media (max-width: 768px) {
+                .sidebar {
+                    width: 100%;
+                    position: relative;
+                    height: auto;
+                }
+
+                .main-content {
+                    margin-left: 0;
+                }
+            }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar / Panel Lateral Inteligente por Roles -->
+    <div class="sidebar d-flex flex-column p-3">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+            <span class="fs-4 fw-bold brand-title"><i class="fas fa-drumstick-bite me-2"></i>Chicken's Joel</span>
+        </a>
+        <hr style="border-color: rgba(244, 196, 48, 0.3);">
+
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item mb-1">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-home me-2"></i> Inicio / Dashboard
+                </a>
+            </li>
+
+            <!-- Opciones exclusivas para Administrador -->
+            @if (User.IsInRole("Administrador"))
+            {
+                <li class="nav-item mb-1">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Producto" ? "active" : "")" asp-controller="Producto" asp-action="Index">
+                        <i class="fas fa-hamburger me-2"></i> Menú de Productos
+                    </a>
+                </li>
+            }
+
+            <!-- Opciones para Mesero y Administrador -->
+            @if (User.IsInRole("Administrador") || User.IsInRole("Mesero"))
+            {
+                var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+                var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+                <li class="nav-item mb-1">
+                    <a class="nav-link @(currentController == "Mesa" ? "active" : "")" asp-controller="Mesa" asp-action="Index">
+                        <i class="fas fa-chair me-2"></i> Gestión de Mesas
+                    </a>
+                </li>
+                <li class="nav-item mb-1">
+                    <!-- Solo se marca active si estamos en Pedido y la acción NO es Cocina -->
+                    <a class="nav-link @(currentController == "Pedido" && currentAction != "Cocina" ? "active" : "")" asp-controller="Pedido" asp-action="Index">
+                        <i class="fas fa-receipt me-2"></i> Gestión de Pedidos
+                    </a>
+                </li>
+            }
+
+            <!-- Opciones para Cocina y Administrador -->
+            @if (User.IsInRole("Administrador") || User.IsInRole("Cocina"))
+            {
+                var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+                var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+                <li class="nav-item mb-1">
+                    <!-- Solo se marca active si la acción es exactamente Cocina -->
+                    <a class="nav-link @(currentController == "Pedido" && currentAction == "Cocina" ? "active" : "")" asp-controller="Pedido" asp-action="Cocina">
+                        <i class="fas fa-utensils me-2"></i>Cocina
+                    </a>
+                </li>
+            }
+        </ul>
+
+        <hr style="border-color: rgba(244, 196, 48, 0.3);">
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle fa-2x me-2" style="color: var(--joel-yellow);"></i>
+                <strong>@User.Identity?.Name</strong>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                <li>
+                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button type="submit" class="dropdown-item text-danger">Cerrar Sesión</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

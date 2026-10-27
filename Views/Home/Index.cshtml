@@ -1,8 +1,103 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard - Panel Principal";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="mb-4">
+    <h1 class="fw-bold" style="color: #2c1e1a;">
+        <i class="fas fa-chart-line me-2" style="color: #b83227;"></i>Panel Principal
+    </h1>
+    <p class="text-muted">Bienvenido al sistema de gestión de <strong>Chicken's Joel</strong>. Este es el resumen del día.</p>
+</div>
+
+<!-- Fila 1: Tarjetas de Resumen en estilo clásico -->
+<div class="row g-3 mb-4">
+    <!-- Ventas del Día -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #b83227 !important; background-color: #fff;">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="card-subtitle text-muted fw-bold">Ventas de Hoy</h6>
+                    <h3 class="card-title fw-bold mb-0 mt-1" style="color: #2c1e1a;">$@ViewBag.TotalVentasHoy.ToString("F2")</h3>
+                </div>
+                <div class="text-secondary opacity-50">
+                    <i class="fas fa-dollar-sign fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pedidos Pendientes -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #f4c430 !important; background-color: #fff;">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="card-subtitle text-muted fw-bold">Pedidos en Proceso</h6>
+                    <h3 class="card-title fw-bold mb-0 mt-1" style="color: #2c1e1a;">@ViewBag.PedidosPendientes</h3>
+                </div>
+                <div class="text-secondary opacity-50">
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mesas Ocupadas -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #4a5568 !important; background-color: #fff;">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="card-subtitle text-muted fw-bold">Mesas Ocupadas</h6>
+                    <h3 class="card-title fw-bold mb-0 mt-1" style="color: #2c1e1a;">@ViewBag.MesasOcupadas / @ViewBag.TotalMesas</h3>
+                </div>
+                <div class="text-secondary opacity-50">
+                    <i class="fas fa-chair fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú Activo -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100" style="border-left: 4px solid #2d3748 !important; background-color: #fff;">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="card-subtitle text-muted fw-bold">Platos en Menú</h6>
+                    <h3 class="card-title fw-bold mb-0 mt-1" style="color: #2c1e1a;">@ViewBag.TotalProductos</h3>
+                </div>
+                <div class="text-secondary opacity-50">
+                    <i class="fas fa-utensils fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fila 2: Accesos Rápidos -->
+<div class="row g-3">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0" style="background-color: #fff;">
+            <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                <h5 class="fw-bold" style="color: #2c1e1a;">
+                    <i class="fas fa-th-large me-2" style="color: #b83227;"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body d-flex flex-wrap gap-2">
+                @if (User.IsInRole("Administrador") || User.IsInRole("Mesero"))
+                {
+                    <a asp-controller="Pedido" asp-action="Create" class="btn btn-primary px-4 py-2">
+                        <i class="fas fa-plus me-2"></i> Tomar Nuevo Pedido
+                    </a>
+                    <a asp-controller="Mesa" asp-action="Index" class="btn btn-outline-dark px-4 py-2">
+                        <i class="fas fa-table me-2"></i> Estado de las Mesas
+                    </a>
+                }
+                @if (User.IsInRole("Administrador"))
+                {
+                    <a asp-controller="Producto" asp-action="Index" class="btn btn-outline-secondary px-4 py-2">
+                        <i class="fas fa-list me-2"></i> Gestionar Menú
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
 </div>

@@ -1,0 +1,73 @@
+﻿@model IEnumerable<Proyecto_Restaurante.Models.Pedido>
+
+@{
+    ViewData["Title"] = "Cocina";
+}
+
+<div class="mb-4">
+    <h1 class="fw-bold" style="color: #2c1e1a;">
+        <i class="fas fa-utensils me-2" style="color: #b83227;"></i>Cocina
+    </h1>
+    <p class="text-muted">Visualización en tiempo real de los pedidos pendientes de preparación.</p>
+</div>
+
+<div class="row g-3">
+    @foreach (var item in Model.Where(p => p.Estado == "Pendiente" || p.Estado == "En Preparación"))
+    {
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #b83227 !important; background-color: #fff;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0" style="color: #2c1e1a;">
+                            <i class="fas fa-chair me-1 text-secondary"></i> Mesa: @item.MesaId
+                        </h5>
+                        <span class="badge @(item.Estado == "Pendiente" ? "bg-warning text-dark" : "bg-info text-dark")">
+                            @item.Estado
+                        </span>
+                    </div>
+
+                    <p class="text-muted small mb-2">
+                        <i class="fas fa-clock me-1"></i> Hora: @item.FechaHora.ToString("HH:mm")
+                    </p>
+
+                    <hr class="text-muted opacity-25">
+
+                    <div class="mb-3">
+                        <strong>Detalles de la Comanda:</strong>
+                        <!-- Si ya tienes cargados los detalles con .Include(p => p.Detalles).ThenInclude(d => d.Producto) -->
+                        <ul class="list-unstyled mt-2 small text-secondary">
+                            @if (item.Detalles != null)
+                            {
+                                @foreach (var det in item.Detalles)
+                                {
+                                    <li><i class="fas fa-check text-success me-1"></i> @det.Cantidad x Producto ID: @det.ProductoId</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+
+                    <!-- Botones de Acción Rápida para Cocina -->
+                    <div class="d-flex gap-2 mt-3">
+                        @if (item.Estado == "Pendiente")
+                        {
+                            <form asp-action="CambiarEstado" method="post" class="w-100">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="nuevoEstado" value="En Preparación" />
+                                <button type="submit" class="btn btn-outline-dark btn-sm w-100">
+                                    <i class="fas fa-fire me-1"></i> Preparar
+                                </button>
+                            </form>
+                        }
+                        <form asp-action="CambiarEstado" method="post" class="w-100">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <input type="hidden" name="nuevoEstado" value="Preparado" />
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-check-circle me-1"></i> Listo
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

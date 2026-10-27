@@ -1,0 +1,171 @@
+@model Proyecto_Restaurante.Models.Pedido
+
+@{
+    ViewData["Title"] = "Editar Pedido";
+    var productos = ViewBag.Productos as List<Proyecto_Restaurante.Models.Producto> ?? new List<Proyecto_Restaurante.Models.Producto>();
+}
+
+<h2>Editar Pedido #@Model.Id</h2>
+<hr />
+
+<form asp-action="Edit" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="FechaHora" />
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="MesaId" class="form-label font-weight-bold">Mesa</label>
+            <select asp-for="MesaId" class="form-select" asp-items="ViewBag.MesaId"></select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Estado" class="form-label font-weight-bold"></label>
+            <select asp-for="Estado" class="form-select">
+                <option value="Pendiente">Pendiente</option>
+                <option value="En Preparacion">En Preparación</option>
+                <option value="Preparado">Preparado</option>
+                <option value="Entregado">Entregado</option>
+                <option value="Pagado">Pagado</option>
+            </select>
+        </div>
+    </div>
+
+    <h4 class="mt-4">Detalle del Pedido</h4>
+    <div class="card p-3 mb-3 bg-light">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label">Agregar Producto</label>
+                <select id="selectProducto" class="form-select">
+                    <option value="">-- Seleccionar Producto --</option>
+                    @foreach (var prod in productos)
+                    {
+                        <option value="@prod.Id" data-precio="@prod.Precio">@prod.Nombre ($@prod.Precio)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Cantidad</label>
+                <input type="number" id="inputCantidad" class="form-control" value="1" min="1" />
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-success w-100" onclick="agregarProducto()">+ Agregar Ítem</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Ítems Cargados -->
+    <table class="table table-bordered table-striped" id="tablaDetalles">
+        <thead class="table-dark">
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Detalles != null && Model.Detalles.Any())
+            {
+                int index = 0;
+                foreach (var detalle in Model.Detalles)
+                {
+                    var subtotal = detalle.PrecioUnitario * detalle.Cantidad;
+                    <tr>
+                        <td>
+                            @(detalle.Producto?.Nombre ?? "Producto")
+                            <input type="hidden" name="Detalles[@index].ProductoId" value="@detalle.ProductoId" />
+                        </td>
+                        <td>
+                            $@detalle.PrecioUnitario.ToString("F2")
+                            <input type="hidden" name="Detalles[@index].PrecioUnitario" value="@detalle.PrecioUnitario" />
+                        </td>
+                        <td>
+                            @detalle.Cantidad
+                            <input type="hidden" name="Detalles[@index].Cantidad" value="@detalle.Cantidad" />
+                        </td>
+                        <td class="col-subtotal" data-valor="@subtotal">$@subtotal.ToString("F2")</td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button>
+                        </td>
+                    </tr>
+                    index++;
+                }
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-end">TOTAL:</th>
+                <th id="lblTotal">$@Model.Total.ToString("F2")</th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <input type="hidden" asp-for="Total" id="inputTotalHidden" value="@Model.Total" />
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <a asp-action="Index" class="btn btn-secondary">Volver a la Lista</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        let contadorIndex = @(Model.Detalles?.Count ?? 0);
+
+        function agregarProducto() {
+            const select = document.getElementById("selectProducto");
+            const productoId = select.value;
+            const productoNombre = select.options[select.selectedIndex]?.text;
+            const precio = parseFloat(select.options[select.selectedIndex]?.getAttribute("data-precio") || 0);
+            const cantidad = parseInt(document.getElementById("inputCantidad").value) || 1;
+
+            if (!productoId) {
+                alert("Por favor selecciona un producto.");
+                return;
+            }
+
+            const subtotal = precio * cantidad;
+            const tbody = document.querySelector("#tablaDetalles tbody");
+
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                        <td>
+                            ${productoNombre.split(' ($')[0]}
+                            <input type="hidden" name="Detalles[${contadorIndex}].ProductoId" value="${productoId}" />
+                        </td>
+                        <td>$${precio.toFixed(2)}
+                            <input type="hidden" name="Detalles[${contadorIndex}].PrecioUnitario" value="${precio}" />
+                        </td>
+                        <td>${cantidad}
+                            <input type="hidden" name="Detalles[${contadorIndex}].Cantidad" value="${cantidad}" />
+                        </td>
+                        <td class="col-subtotal" data-valor="${subtotal}">$${subtotal.toFixed(2)}</td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button>
+                        </td>
+                    `;
+
+            tbody.appendChild(fila);
+            contadorIndex++;
+            calcularTotal();
+            select.value = "";
+            document.getElementById("inputCantidad").value = "1";
+        }
+
+        function eliminarFila(btn) {
+            btn.closest("tr").remove();
+            calcularTotal();
+        }
+
+        function calcularTotal() {
+            let total = 0;
+            document.querySelectorAll(".col-subtotal").forEach(td => {
+                total += parseFloat(td.getAttribute("data-valor") || 0);
+            });
+            document.getElementById("lblTotal").innerText = "$" + total.toFixed(2);
+            document.getElementById("inputTotalHidden").value = total.toFixed(2);
+        }
+    </script>
+}
