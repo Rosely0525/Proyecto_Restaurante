@@ -1,10 +1,12 @@
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Proyecto_Restaurante.Data;
 using Proyecto_Restaurante.Models;
 
+[Authorize]
 public class PedidoController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -30,7 +32,11 @@ public class PedidoController : Controller
         }
 
         var pedido = await _context.Pedidos
+            .Include(p => p.Mesa)
+            .Include(p => p.Detalles)
+            .ThenInclude(d => d.Producto)
             .FirstOrDefaultAsync(m => m.Id == id);
+
         if (pedido == null)
         {
             return NotFound();
@@ -182,6 +188,7 @@ public class PedidoController : Controller
         return View(pedido);
     }
 
+    [Authorize(Roles = "Administrador")]
     // GET: PEDIDOS/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
@@ -200,6 +207,7 @@ public class PedidoController : Controller
         return View(pedido);
     }
 
+    [Authorize(Roles = "Administrador")]
     // POST: PEDIDOS/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
@@ -218,5 +226,39 @@ public class PedidoController : Controller
     private bool PedidoExists(int? id)
     {
         return _context.Pedidos.Any(e => e.Id == id);
+    }
+
+    // GET: PEDIDOS/Cocina
+    [Authorize(Roles = "Administrador, Cocina, Mesero")]
+    public async Task<IActionResult> Cocina()
+    {
+        var pedidosPendientes = await _context.Pedidos
+            .Include(p => p.Mesa)
+            .Include(p => p.Detalles)
+            .ThenInclude(d => d.Producto)
+            .Where(p => p.Estado == "Pendiente" || p.Estado == "En Preparación")
+            .OrderBy(p => p.FechaHora)
+            .ToListAsync();
+
+        return View(pedidosPendientes);
+    }
+
+    // POST: PEDIDOS/CambiarEstado
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Administrador, Cocina, Mesero")]
+    public async Task<IActionResult> CambiarEstado(int id, string nuevoEstado)
+    {
+        var pedido = await _context.Pedidos.FindAsync(id);
+        if (pedido == null)
+        {
+            return NotFound();
+        }
+
+        pedido.Estado = nuevoEstado;
+        _context.Update(pedido);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Cocina));
     }
 }

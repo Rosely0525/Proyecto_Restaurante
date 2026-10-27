@@ -1,9 +1,11 @@
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Proyecto_Restaurante.Models;
 using Proyecto_Restaurante.Data;
+using Proyecto_Restaurante.Models;
 
+[Authorize(Roles = "Administrador, Mesero")]
 public class MesaController : Controller
 {
     private readonly ApplicationDbContext _context;
